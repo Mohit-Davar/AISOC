@@ -1,8 +1,58 @@
 "use client";
-import { Button } from "@heroui/button";
+
+import { useState } from "react";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { Button } from "@heroui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const schema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+type formData = z.infer<typeof schema>;
 
 const SignUpForm = () => {
+  const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<formData>({
+    resolver: zodResolver(schema),
+  });
+  const [error, setError] = useState('');
+
+  const onSubmit = async (data: formData) => {
+    setError('');
+
+    try {
+      const res = await fetch('/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        router.push('/login');
+      } else {
+        const { message } = await res.json();
+        setError(message);
+      }
+    } catch (error) {
+      setError('Error, try again');
+      console.log('Error during registration: ', error);
+    }
+  };
+
   return (
     <div className="flex justify-center items-center px-3 h-screen font-inter">
       <div className="z-50 space-y-8 bg-white shadow-md p-8 rounded sm:w-96">
@@ -10,7 +60,10 @@ const SignUpForm = () => {
           Create My Account
         </h2>
 
-        <form className="space-y-6">
+        <form
+          className="space-y-6"
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <div>
             <label
               className="block font-medium text-gray-700 text-sm"
@@ -20,11 +73,15 @@ const SignUpForm = () => {
             </label>
             <input
               autoComplete="name"
-              className="bg-gray-100 mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 w-full text-black sm:text-sm"
               id="name"
               placeholder="Full Name"
               type="text"
+              {...register('name')}
+              className="bg-gray-100 mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-500 w-full text-black sm:text-sm"
             />
+            {errors.name && (
+              <p className="mt-1 text-red-500 text-xs">{errors.name.message}</p>
+            )}
           </div>
 
           <div>
@@ -36,11 +93,15 @@ const SignUpForm = () => {
             </label>
             <input
               autoComplete="email"
-              className="bg-gray-100 mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-500 w-full text-black sm:text-sm"
               id="email"
               placeholder="Email address"
               type="email"
+              {...register('email')}
+              className="bg-gray-100 mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-500 w-full text-black sm:text-sm"
             />
+            {errors.email && (
+              <p className="mt-1 text-red-500 text-xs">{errors.email.message}</p>
+            )}
           </div>
 
           <div>
@@ -52,12 +113,25 @@ const SignUpForm = () => {
             </label>
             <input
               autoComplete="current-password"
-              className="bg-gray-100 mt-1 mb-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-500 w-full text-black sm:text-sm"
               id="password"
               placeholder="Password"
               type="password"
+              {...register('password')}
+              className="bg-gray-100 mt-1 mb-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-500 w-full text-black sm:text-sm"
             />
+            {errors.password && (
+              <p className="mt-1 text-red-500 text-xs">
+                {errors.password.message}
+              </p>
+            )}
           </div>
+
+          {error && (
+            <div className="bg-red-500 mt-2 px-3 py-1 rounded-md w-fit text-white text-sm">
+              {error}
+            </div>
+          )}
+
 
           <div className="content-center grid">
             <Button color="success" radius="full" type="submit" variant="ghost">

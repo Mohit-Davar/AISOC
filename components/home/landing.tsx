@@ -1,10 +1,4 @@
-import NextLink from "next/link";
-import { Link } from "@heroui/link";
-import { Button } from "@heroui/button";
-import { button as buttonStyles } from "@heroui/theme";
-
-import { siteConfig } from "@/config/site";
-import { title, subtitle } from "@/components/primitives";
+import { subtitle, title } from '@/components/primitives';
 
 export default function Landing() {
   return (
@@ -20,28 +14,6 @@ export default function Landing() {
           Real-time, AI-powered CCTV analysis for PPE compliance and accident
           prevention.
         </div>
-      </div>
-
-      <div className="flex gap-3">
-        <NextLink
-          className="flex justify-start items-center gap-1"
-          href="/signup"
-        >
-          <Button color="primary" radius="md" size="lg" variant="shadow">
-            Get Started
-          </Button>
-        </NextLink>
-        <Link
-          isExternal
-          className={buttonStyles({
-            variant: "shadow",
-            radius: "md",
-            size: "lg",
-          })}
-          href={siteConfig.links.demo}
-        >
-          See Demo
-        </Link>
       </div>
     </section>
   );

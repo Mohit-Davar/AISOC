@@ -1,23 +1,36 @@
-"use client";
-import {
-  Navbar as HeroUINavbar,
-  NavbarContent,
-  NavbarMenu,
-  NavbarMenuToggle,
-  NavbarBrand,
-  NavbarItem,
-  NavbarMenuItem,
-} from "@heroui/navbar";
-import { Link } from "@heroui/link";
-import NextLink from "next/link";
-import { usePathname } from "next/navigation";
+'use client';
+import NextLink from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
-import { siteConfig } from "@/config/site";
-import { ThemeSwitch } from "@/components/theme-switch";
-import { GithubIcon } from "@/components/icons";
+import { GithubIcon } from '@/components/icons';
+import { ThemeSwitch } from '@/components/theme-switch';
+import { siteConfig } from '@/config/site';
+import {
+  Button,
+  Link,
+  Navbar as HeroUINavbar,
+  NavbarBrand,
+  NavbarContent,
+  NavbarItem,
+  NavbarMenu,
+  NavbarMenuItem,
+  NavbarMenuToggle,
+} from '@heroui/react';
 
 export const Navbar = () => {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/logout', {
+        method: 'POST',
+      });
+      router.push('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
 
   return (
     <HeroUINavbar
@@ -39,7 +52,11 @@ export const Navbar = () => {
             return (
               <NavbarItem key={item.href}>
                 <NextLink
-                  className={`px-4 py-1.5 rounded-full transition-colors ${isActive ? "bg-primary text-primary-foreground" : "hover:bg-default-100"}`}
+                  className={`px-4 py-1.5 rounded-full transition-colors ${
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-default-100'
+                  }`}
                   href={item.href}
                 >
                   {item.label}
@@ -59,6 +76,11 @@ export const Navbar = () => {
           <Link isExternal aria-label="Github" href={siteConfig.links.github}>
             <GithubIcon className="text-default-500" />
           </Link>
+          {pathname !== '/login' && pathname !== '/signup' && (
+            <Button color="danger" onClick={handleLogout} variant="ghost">
+              Logout
+            </Button>
+          )}
         </NavbarItem>
       </NavbarContent>
 
@@ -82,3 +104,4 @@ export const Navbar = () => {
     </HeroUINavbar>
   );
 };
+

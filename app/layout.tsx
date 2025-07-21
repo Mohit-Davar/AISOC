@@ -1,12 +1,13 @@
-import "@/styles/globals.css";
-import { Metadata, Viewport } from "next";
-import clsx from "clsx";
+import '@/styles/globals.css';
 
-import { Providers } from "./providers";
+import clsx from 'clsx';
+import { Metadata, Viewport } from 'next';
 
-import { siteConfig } from "@/config/site";
-import { fontGrotesk, fontMono, fontRoboto, fontSans } from "@/config/fonts";
-import { Navbar } from "@/components/navbar";
+import { Navbar } from '@/components/navbar';
+import { fontGrotesk, fontMono, fontRoboto, fontSans } from '@/config/fonts';
+import { siteConfig } from '@/config/site';
+
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: {
