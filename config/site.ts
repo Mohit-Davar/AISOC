@@ -2,7 +2,7 @@ export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
   name: "VisionAI",
-  description: "CCTV analuser for your factory",
+  description: "CCTV analyser for your factory",
   navItems: [
     {
       label: "Feed",
@@ -12,9 +12,12 @@ export const siteConfig = {
       label: "Alerts",
       href: "/alerts",
     },
+    {
+      label: "Configs",
+      href: "/configs",
+    },
   ],
   links: {
-    github: "https://github.com/heroui-inc/heroui",
-    demo: "https://github.com/heroui-inc/heroui",
+    github: "https://github.com/Aashima77/Binary_Brains",
   },
 };

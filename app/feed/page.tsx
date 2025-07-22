@@ -1,14 +1,9 @@
 "use client";
 import { useState } from "react";
+
 import { CheckCircle, XCircle } from "lucide-react";
-import {
-  CardBody,
-  CardFooter,
-  Divider,
-  Input,
-  Card,
-  Chip,
-} from "@heroui/react";
+
+import { Card, CardBody, CardFooter, Chip, Divider } from "@heroui/react";
 
 const cameraFeeds = [
   { location: "Main Entrance", status: "active" },
@@ -29,12 +24,11 @@ export default function VisionAIDashboard() {
     <div className="flex w-full h-full">
       {/* Sidebar */}
       <aside className="flex flex-col p-4 border-r w-64">
-        <Input
-          className="mb-4"
+        <input
+          className="mb-4 px-6 py-3 rounded-full"
           placeholder="Search camera"
-          radius="full"
+          type="search"
           value={search}
-          variant="bordered"
           onChange={(e) => setSearch(e.target.value)}
         />
         <div className="flex flex-col gap-3 overflow-y-auto">

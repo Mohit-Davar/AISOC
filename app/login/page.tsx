@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState } from "react";
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-import { Button } from '@heroui/react';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Button, Spinner } from "@heroui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const schema = z.object({
   email: z.email('Invalid email address'),
@@ -22,7 +22,7 @@ const LoginForm = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
@@ -113,8 +113,8 @@ const LoginForm = () => {
 
 
           <div className="content-center grid">
-            <Button color="success" radius="full" type="submit" variant="ghost">
-              Sign In
+            <Button color="success" disabled={isSubmitting} radius="full" type="submit" variant="solid" className="text-white">
+              {isSubmitting ? <Spinner variant="simple" size="sm"/> : 'Sign In'}
             </Button>
           </div>
         </form>

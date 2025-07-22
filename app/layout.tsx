@@ -1,13 +1,13 @@
-import '@/styles/globals.css';
+import "@/styles/globals.css";
 
-import clsx from 'clsx';
-import { Metadata, Viewport } from 'next';
+import clsx from "clsx";
+import { Metadata, Viewport } from "next";
 
-import { Navbar } from '@/components/navbar';
-import { fontGrotesk, fontMono, fontRoboto, fontSans } from '@/config/fonts';
-import { siteConfig } from '@/config/site';
+import { Navbar } from "@/components/navbar";
+import { fontGrotesk, fontMono, fontRoboto, fontSans } from "@/config/fonts";
+import { siteConfig } from "@/config/site";
 
-import { Providers } from './providers';
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: {
@@ -44,11 +44,9 @@ export default function RootLayout({
           fontMono.variable,
         )}
       >
-        <Providers themeProps={{ attribute: "class", defaultTheme: "dark"}}>
-          <div className="relative flex flex-col h-screen">
-            <Navbar />
-            <main className="flex-grow">{children}</main>
-          </div>
+        <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
+          <Navbar />
+          <main>{children}</main>
         </Providers>
       </body>
     </html>

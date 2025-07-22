@@ -53,7 +53,7 @@ const FeatureSection = () => {
                 transition={{ duration: 0.5 }}
               >
                 <motion.div
-                  className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${index === currentFeature ? "bg-blue-500 scale-110" : "bg-gray-500"
+                  className={`w-8 h-8 md:w-10 md:h-10 text-secondary rounded-full flex items-center justify-center ${index === currentFeature ? "bg-blue-500 scale-110" : "bg-gray-500"
                     } border-2 ${index === currentFeature ? "border-blue-400" : "border-gray-400"
                     }`}
                   initial={{ opacity: 0 }}

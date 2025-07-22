@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { Button } from "@heroui/react";
+import { Button, Spinner } from "@heroui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const schema = z.object({
@@ -23,7 +23,7 @@ const SignUpForm = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<formData>({
     resolver: zodResolver(schema),
   });
@@ -134,8 +134,8 @@ const SignUpForm = () => {
 
 
           <div className="content-center grid">
-            <Button color="success" radius="full" type="submit" variant="ghost">
-              Sign Up
+            <Button color="success" disabled={isSubmitting} radius="full" type="submit" variant="solid" className="text-white">
+              {isSubmitting ? <Spinner variant="simple" size="sm" /> : 'Sign Up'}
             </Button>
           </div>
         </form>

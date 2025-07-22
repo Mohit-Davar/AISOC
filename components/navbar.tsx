@@ -1,21 +1,15 @@
 'use client';
-import NextLink from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import NextLink from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
-import { GithubIcon } from '@/components/icons';
-import { ThemeSwitch } from '@/components/theme-switch';
-import { siteConfig } from '@/config/site';
+import { GithubIcon } from "@/components/icons";
+import { ThemeSwitch } from "@/components/theme-switch";
+import { siteConfig } from "@/config/site";
 import {
-  Button,
-  Link,
-  Navbar as HeroUINavbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-  NavbarMenu,
-  NavbarMenuItem,
-  NavbarMenuToggle,
-} from '@heroui/react';
+  Avatar, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Link,
+  Navbar as HeroUINavbar, NavbarBrand, NavbarContent, NavbarItem, NavbarMenu,
+  NavbarMenuItem, NavbarMenuToggle,
+} from "@heroui/react";
 
 export const Navbar = () => {
   const pathname = usePathname();
@@ -36,7 +30,7 @@ export const Navbar = () => {
     <HeroUINavbar
       height="64px"
       isBordered={true}
-      maxWidth="xl"
+      maxWidth="full"
       position="sticky"
     >
       <NavbarBrand as="li" className="gap-3 max-w-fit">
@@ -52,11 +46,10 @@ export const Navbar = () => {
             return (
               <NavbarItem key={item.href}>
                 <NextLink
-                  className={`px-4 py-1.5 rounded-full transition-colors ${
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'hover:bg-default-100'
-                  }`}
+                  className={`px-4 py-1.5 rounded-full transition-colors ${isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-default-100'
+                    }`}
                   href={item.href}
                 >
                   {item.label}
@@ -71,15 +64,34 @@ export const Navbar = () => {
         className="hidden sm:flex basis-1/5 sm:basis-full"
         justify="end"
       >
-        <NavbarItem className="hidden sm:flex gap-2">
+        <NavbarItem className="hidden sm:flex gap-4">
           <ThemeSwitch />
-          <Link isExternal aria-label="Github" href={siteConfig.links.github}>
-            <GithubIcon className="text-default-500" />
-          </Link>
-          {pathname !== '/login' && pathname !== '/signup' && (
-            <Button color="danger" onClick={handleLogout} variant="ghost">
-              Logout
-            </Button>
+          {pathname !== '/login' && pathname !== '/signup' && pathname !== '/' ? (
+            <Dropdown placement="bottom-end">
+              <DropdownTrigger>
+                <Avatar
+                  isBordered
+                  as="button"
+                  className="transition-transform"
+                  color="secondary"
+                  name="User"
+                  size="sm"
+                  src="https://avatar.iran.liara.run/public/44"
+                />
+              </DropdownTrigger>
+              <DropdownMenu aria-label="Profile Actions" variant="flat">
+                <DropdownItem key="profile" as={NextLink} href="/profile">
+                  Profile
+                </DropdownItem>
+                <DropdownItem key="logout" color="danger" onPress={handleLogout}>
+                  Log Out
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          ) : (
+            <Link isExternal aria-label="Github" href={siteConfig.links.github}>
+              <GithubIcon className="text-default-500" />
+            </Link>
           )}
         </NavbarItem>
       </NavbarContent>
