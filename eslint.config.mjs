@@ -1,8 +1,8 @@
-import prettierConfig from 'eslint-config-prettier';
-import prettierPlugin from 'eslint-plugin-prettier';
+import prettierConfig from "eslint-config-prettier";
+import prettierPlugin from "eslint-plugin-prettier";
 
-import tseslint from '@typescript-eslint/eslint-plugin';
-import tsparser from '@typescript-eslint/parser';
+import tseslint from "@typescript-eslint/eslint-plugin";
+import tsparser from "@typescript-eslint/parser";
 
 export default [
   {
@@ -22,7 +22,7 @@ export default [
       ...tseslint.configs.recommended.rules,
       ...prettierConfig.rules,
       "@typescript-eslint/no-unused-vars": "warn",
-      "no-console": "warn",
+      // "no-console": "warn",
       "semi": ["error", "always"],
       "quotes": ["error", "double"],
       "prettier/prettier": "error",
