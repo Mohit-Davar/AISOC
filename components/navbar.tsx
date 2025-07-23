@@ -17,8 +17,8 @@ export const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/logout', {
-        method: 'POST',
+      await fetch('/api/auth/session', {
+        method: 'DELETE',
       });
       router.push('/login');
     } catch (error) {

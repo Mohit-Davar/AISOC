@@ -15,7 +15,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('/api/profile');
+        const res = await fetch('/api/auth/user');
         if (res.ok) {
           const data = await res.json();
           setUser(data.user);

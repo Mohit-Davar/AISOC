@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const { email, password } = schema.parse(body);
 
     const user = await db.query(
-      "SELECT name, email, password FROM users WHERE email = $1",
+      "SELECT id, name, email, password FROM users WHERE email = $1",
       [email],
     );
 
@@ -36,7 +36,6 @@ export async function POST(req: NextRequest) {
         { status: 401 },
       );
     }
-
     const accessToken = sign(
       { userId: user.rows[0].id },
       process.env.JWT_ACCESS_SECRET!,
@@ -77,4 +76,27 @@ export async function POST(req: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+export async function DELETE() {
+  const serialized = [
+    serialize("accessToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: -1,
+      path: "/",
+    }),
+    serialize("refreshToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: -1,
+      path: "/",
+    }),
+  ];
+
+  return new NextResponse(JSON.stringify({ message: "Logout successful" }), {
+    headers: { "Set-Cookie": serialized.join(", ") },
+  });
 }

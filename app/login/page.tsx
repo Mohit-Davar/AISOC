@@ -32,7 +32,7 @@ const LoginForm = () => {
     setError('');
 
     try {
-      const res = await fetch('/api/login', {
+      const res = await fetch('/api/auth/session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

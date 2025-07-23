@@ -23,11 +23,12 @@ CREATE TABLE locations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Cameras
+CREATE TYPE camera_status AS ENUM ('active', 'inactive', 'offline');
 CREATE TABLE cameras (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     stream_url TEXT,
+    status camera_status DEFAULT 'active',
     location_id INTEGER NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

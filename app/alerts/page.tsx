@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardHeader,
@@ -19,106 +20,82 @@ import {
 } from "@heroui/react";
 import { Filter, X, Calendar, MapPin, AlertTriangle, Info } from "lucide-react";
 
-const PastViolationsUI = () => {
-  // Sample data
-  const violationsData = [
-    {
-      id: 1,
-      timestamp: "2025-06-14 19:15",
-      location: "Main Entrance",
-      type: "No Safety Helmet",
-    },
-    {
-      id: 2,
-      timestamp: "2025-06-14 18:42",
-      location: "Warehouse Floor",
-      type: "No Safety Boots",
-    },
-    {
-      id: 3,
-      timestamp: "2025-06-14 15:18",
-      location: "Assembly Line",
-      type: "No Safety Goggles",
-    },
-    {
-      id: 4,
-      timestamp: "2025-06-14 14:13",
-      location: "Chemical Storage",
-      type: "No Safety Boots",
-    },
-    {
-      id: 5,
-      timestamp: "2025-06-14 13:47",
-      location: "Assembly Line",
-      type: "No Safety Helmet",
-    },
-    {
-      id: 6,
-      timestamp: "2025-06-14 11:26",
-      location: "Quality Control",
-      type: "No Safety Boots",
-    },
-  ];
+interface Alert {
+  id: number;
+  timestamp: string;
+  alert_type: string;
+  description: string;
+  violation_id: number | null;
+  factory_name: string;
+}
 
-  // State management
+const fetchAlerts = async (): Promise<Alert[]> => {
+  const res = await fetch("/api/alerts");
+  if (!res.ok) {
+    throw new Error(`HTTP error! status: ${res.status}`);
+  }
+  return res.json();
+};
+
+const AlertsPage = () => {
   const [dateFilter, setDateFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
-  const [isLoading] = useState(false);
+  const [factoryFilter, setFactoryFilter] = useState("");
 
-  // Get unique values for filters
-  const uniqueTypes = Array.from(new Set(violationsData.map((v) => v.type)));
-  const uniqueLocations = Array.from(
-    new Set(violationsData.map((v) => v.location)),
-  );
+  const { data: alerts, isLoading, isError, error } = useQuery<Alert[], Error>({
+    queryKey: ["alerts"],
+    queryFn: fetchAlerts,
+  });
 
-  // Filter violations based on current filters
-  const filteredViolations = useMemo(() => {
-    return violationsData.filter((violation) => {
+  const uniqueTypes = useMemo(() => {
+    return Array.from(new Set(alerts?.map((alert) => alert.alert_type) || []));
+  }, [alerts]);
+
+  const uniqueFactories = useMemo(() => {
+    return Array.from(new Set(alerts?.map((alert) => alert.factory_name) || []));
+  }, [alerts]);
+
+  const filteredAlerts = useMemo(() => {
+    return alerts?.filter((alert) => {
       const matchesDate =
-        !dateFilter || violation.timestamp.includes(dateFilter);
+        !dateFilter || alert.timestamp.includes(dateFilter);
       const matchesType =
-        !typeFilter || typeFilter === "all" || violation.type === typeFilter;
-      const matchesLocation =
-        !locationFilter ||
-        locationFilter === "all" ||
-        violation.location === locationFilter;
+        !typeFilter || typeFilter === "all" || alert.alert_type === typeFilter;
+      const matchesFactory =
+        !factoryFilter ||
+        factoryFilter === "all" ||
+        alert.factory_name === factoryFilter;
 
-      return matchesDate && matchesType && matchesLocation;
-    });
-  }, [dateFilter, typeFilter, locationFilter, violationsData]);
+      return matchesDate && matchesType && matchesFactory;
+    }) || [];
+  }, [dateFilter, typeFilter, factoryFilter, alerts]);
 
-  // Clear all filters
   const clearFilters = () => {
     setDateFilter("");
     setTypeFilter("");
-    setLocationFilter("");
+    setFactoryFilter("");
   };
 
   return (
     <div className="p-6">
       <div className="space-y-6 mx-auto max-w-7xl">
-        {/* Header */}
-        <h1 className="font-bold text-3xl">Past Violations</h1>
+        <h1 className="font-bold text-3xl">Alerts</h1>
 
-        {/* Filter Section */}
         <Card>
           <CardHeader>
             <Filter className="size-5" />
-            <span className="font-semibold text-lg">Filter Violations</span>
+            <span className="font-semibold text-lg">Filter Alerts</span>
           </CardHeader>
           <CardBody className="py-4">
             <div className="gap-4 grid grid-cols-1 sm:grid-cols-3">
-              {/* Date Filter */}
               <Input
                 type="date"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
 
-              {/* PPE Type Filter */}
               <Select
-                placeholder="Violation"
+                placeholder="Alert Type"
                 startContent={<AlertTriangle className="size-4" />}
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
@@ -128,20 +105,18 @@ const PastViolationsUI = () => {
                 ))}
               </Select>
 
-              {/* Camera Zone Filter */}
               <Select
-                placeholder="Camera"
+                placeholder="Factory"
                 startContent={<MapPin className="size-4" />}
-                value={locationFilter}
-                onChange={(e) => setLocationFilter(e.target.value)}
+                value={factoryFilter}
+                onChange={(e) => setFactoryFilter(e.target.value)}
               >
-                {uniqueLocations.map((location) => (
-                  <SelectItem key={location}>{location}</SelectItem>
+                {uniqueFactories.map((factory) => (
+                  <SelectItem key={factory}>{factory}</SelectItem>
                 ))}
               </Select>
             </div>
 
-            {/* Clear Filters Button */}
             <div className="flex justify-end mt-4">
               <Button
                 size="sm"
@@ -155,15 +130,14 @@ const PastViolationsUI = () => {
           </CardBody>
         </Card>
 
-        {/* Recent Violations Table */}
         <Card>
           <CardHeader className="pb-3">
-            <Badge color="danger" content={filteredViolations.length} size="lg">
+            <Badge color="danger" content={filteredAlerts.length} size="lg">
               <Button
                 startContent={<AlertTriangle className="w-4 h-4" />}
                 variant="flat"
               >
-                Violations
+                Alerts
               </Button>
             </Badge>
           </CardHeader>
@@ -173,7 +147,7 @@ const PastViolationsUI = () => {
                 <Spinner color="primary" size="lg" />
               </div>
             ) : (
-              <Table aria-label="Past violations table">
+              <Table aria-label="Alerts table">
                 <TableHeader>
                   <TableColumn>
                     <div className="flex items-center gap-2">
@@ -184,31 +158,38 @@ const PastViolationsUI = () => {
                   <TableColumn>
                     <div className="flex items-center gap-2">
                       <MapPin className="size-4" />
-                      CAMERA LOCATION
+                      FACTORY
                     </div>
                   </TableColumn>
                   <TableColumn>
                     <div className="flex items-center gap-2">
                       <AlertTriangle className="size-4" />
-                      VIOLATION TYPE
+                      ALERT TYPE
+                    </div>
+                  </TableColumn>
+                  <TableColumn>
+                    <div className="flex items-center gap-2">
+                      <Info className="size-4" />
+                      DESCRIPTION
                     </div>
                   </TableColumn>
                   <TableColumn>ACTIONS</TableColumn>
                 </TableHeader>
                 <TableBody>
-                  {filteredViolations.map((violation) => (
-                    <TableRow key={violation.id}>
+                  {filteredAlerts.map((alert) => (
+                    <TableRow key={alert.id}>
                       <TableCell>
                         <span className="font-mono text-sm">
-                          {violation.timestamp}
+                          {new Date(alert.timestamp).toLocaleString()}
                         </span>
                       </TableCell>
-                      <TableCell>{violation.location}</TableCell>
+                      <TableCell>{alert.factory_name}</TableCell>
                       <TableCell>
                         <span className="bg-red-500 px-4 py-2 rounded-2xl text-white">
-                          {violation.type}
+                          {alert.alert_type}
                         </span>
                       </TableCell>
+                      <TableCell>{alert.description}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button
@@ -235,10 +216,10 @@ const PastViolationsUI = () => {
               </Table>
             )}
 
-            {filteredViolations.length === 0 && !isLoading && (
+            {filteredAlerts.length === 0 && !isLoading && (
               <div className="py-8 text-gray-400 text-center">
                 <Info className="opacity-50 mx-auto mb-4 w-12 h-12" />
-                <p>No violations found matching your filters.</p>
+                <p>No alerts found matching your filters.</p>
               </div>
             )}
           </CardBody>
@@ -248,4 +229,4 @@ const PastViolationsUI = () => {
   );
 };
 
-export default PastViolationsUI;
+export default AlertsPage;

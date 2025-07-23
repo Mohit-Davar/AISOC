@@ -3,55 +3,153 @@ import { useState } from "react";
 
 import { CheckCircle, XCircle } from "lucide-react";
 
-import { Card, CardBody, CardFooter, Chip, Divider } from "@heroui/react";
+import {
+  Card, CardBody, CardFooter, Chip, Divider, Input, Spinner,
+} from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
 
-const cameraFeeds = [
-  { location: "Main Entrance", status: "active" },
-  { location: "Warehouse Exit", status: "inactive" },
-  { location: "Front Gate", status: "active" },
-  { location: "Rear Loading Zone", status: "active" },
-];
+interface Camera {
+  id: number;
+  name: string;
+  status: string;
+  factoryId: number;
+  factoryName: string;
+  locationId: number;
+  locationName: string;
+}
+
+interface Location {
+  id: number;
+  name: string;
+  cameras: Camera[];
+}
+
+interface Factory {
+  id: number;
+  name: string;
+  locations: { [key: number]: Location };
+}
+
+const fetchCameraFeeds = async (): Promise<Camera[]> => {
+  const res = await fetch("/api/feed");
+  if (!res.ok) {
+    throw new Error(`HTTP error! status: ${res.status}`);
+  }
+  const data = await res.json();
+
+  const flattenedCameras: Camera[] = [];
+  data.forEach((factory: any) => {
+    Object.values(factory.locations).forEach((location: any) => {
+      location.cameras.forEach((camera: any) => {
+        flattenedCameras.push({
+          id: camera.id,
+          name: camera.name,
+          status: camera.status,
+          factoryId: factory.id,
+          factoryName: factory.name,
+          locationId: location.id,
+          locationName: location.name,
+        });
+      });
+    });
+  });
+  return flattenedCameras;
+};
 
 export default function VisionAIDashboard() {
-  const [selectedCamera, setSelectedCamera] = useState(cameraFeeds[0]);
+  const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [search, setSearch] = useState("");
 
-  const filteredFeeds = cameraFeeds.filter((cam) =>
-    cam.location.toLowerCase().includes(search.toLowerCase()),
-  );
+  const { data, isLoading, isError, error } = useQuery<Camera[], Error>({
+    queryKey: ["cameraFeeds"],
+    queryFn: fetchCameraFeeds,
+    onSuccess: (data) => {
+      if (data.length > 0) {
+        setSelectedCamera(data[0]);
+        
+      }
+    },
+  });
+
+  const handleCameraSelect = (camera: Camera) => {
+    setSelectedCamera(camera);
+  };
+
+  const filteredCameras = data?.filter(
+    (cam) =>
+      cam.name.toLowerCase().includes(search.toLowerCase()) ||
+      cam.locationName.toLowerCase().includes(search.toLowerCase()) ||
+      cam.factoryName.toLowerCase().includes(search.toLowerCase()),
+  ) || [];
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner label="Loading camera feeds..." color="primary" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center h-screen text-red-500">
+        Error: {error?.message}
+      </div>
+    );
+  }
+
+  if (!selectedCamera) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        No camera feeds available.
+      </div>
+    );
+  }
+
 
   return (
     <div className="flex w-full h-full">
       {/* Sidebar */}
       <aside className="flex flex-col p-4 border-r w-64">
-        <input
-          className="mb-4 px-6 py-3 rounded-full"
-          placeholder="Search camera"
+        <Input
+          className="mb-4"
+          placeholder="Search cameras, locations, factories..."
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          fullWidth
+          clearable
+          bordered
         />
         <div className="flex flex-col gap-3 overflow-y-auto">
-          {filteredFeeds.map((cam, index) => (
+          {filteredCameras.map((cam) => (
             <Card
-              key={index}
-              className={`p-1 transition-all duration-200 cursor-pointer border-2 rounded-xl
-                ${selectedCamera.location === cam.location
-                  ? "border-blue-500 bg-blue-100 text-black"
-                  : "border-gray-200 "
-                }`}
-              isPressable={true}
+              key={cam.id}
+              isPressable
+              isHoverable
               radius="lg"
-              shadow="none"
-              onPress={() => setSelectedCamera(cam)}
+              shadow="sm"
+              className={`p-3 transition-all duration-200
+                ${selectedCamera?.id === cam.id
+                  ? "border-2 border-blue-500 bg-blue-100 text-black"
+                  : "border-2 border-transparent hover:border-gray-300"
+                }`}
+              onPress={() => handleCameraSelect(cam)}
             >
-              <CardBody>
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-sm">{cam.location}</span>
-                  <div
-                    className={`w-3 h-3 rounded-full ${cam.status === "active" ? "bg-green-500" : "bg-gray-400"}`}
-                  />
+              <CardBody className="flex flex-row justify-between items-center">
+                <div className="flex flex-col">
+                  <span className="font-semibold text-base">{cam.name}</span>
+                  <span className="text-gray-500 text-sm">
+                    {cam.factoryName} &gt; {cam.locationName}
+                  </span>
                 </div>
+                <Chip
+                  size="sm"
+                  variant="dot"
+                  color={cam.status === "active" ? "success" : "default"}
+                >
+                  {cam.status.charAt(0).toUpperCase() + cam.status.slice(1)}
+                </Chip>
               </CardBody>
             </Card>
           ))}
@@ -63,7 +161,9 @@ export default function VisionAIDashboard() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <p className="font-semibold text-lg">{selectedCamera.location}</p>
+            <p className="font-semibold text-lg">
+              {selectedCamera.factoryName} &gt; {selectedCamera.locationName} &gt; {selectedCamera.name}
+            </p>
           </div>
           <Chip
             color={selectedCamera.status === "active" ? "success" : "default"}
@@ -75,28 +175,24 @@ export default function VisionAIDashboard() {
         </div>
 
         {/* Placeholder for Camera Feed */}
-        <Card radius="lg" shadow="sm">
-          <CardBody className="flex justify-center items-center p-4 h-[500px]">
-            <p>Live feed of {selectedCamera.location} will appear here</p>
+        <Card className="w-full h-[600px]" radius="lg" shadow="sm">
+          <CardBody className="flex justify-center items-center p-4 h-full">
+            <p className="text-gray-500 text-lg">Live feed of {selectedCamera.name} will appear here</p>
           </CardBody>
           <Divider />
-          <CardFooter className="flex justify-between">
-            <div className="flex gap-2 text-green-500">
-              <CheckCircle />
-              <span className="text-primary">Vest</span>
-            </div>
-            <div className="flex gap-2 text-red-500">
-              <XCircle />
-              <span className="text-primary">Helmet</span>
-            </div>
-            <div className="flex gap-2 text-green-500">
-              <CheckCircle />
-              <span className="text-primary">Gloves</span>
-            </div>
-            <div className="flex gap-2 text-red-500">
-              <XCircle />
-              <span className="text-primary">Mask</span>
-            </div>
+          <CardFooter className="flex justify-around p-4">
+            <Chip startContent={<CheckCircle size={18} />} variant="flat" color="success">
+              Vest
+            </Chip>
+            <Chip startContent={<XCircle size={18} />} variant="flat" color="danger">
+              Helmet
+            </Chip>
+            <Chip startContent={<CheckCircle size={18} />} variant="flat" color="success">
+              Gloves
+            </Chip>
+            <Chip startContent={<XCircle size={18} />} variant="flat" color="danger">
+              Mask
+            </Chip>
           </CardFooter>
         </Card>
       </main>
