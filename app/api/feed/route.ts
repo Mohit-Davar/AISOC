@@ -1,6 +1,7 @@
-import { db } from '@/lib/db';
-import { NextRequest, NextResponse } from 'next/server';
-import { verify } from 'jsonwebtoken';
+import { verify } from "jsonwebtoken";
+import { NextRequest, NextResponse } from "next/server";
+
+import { db } from "@/lib/db";
 
 interface DecodedToken {
   userId: string;
@@ -10,11 +11,14 @@ export async function GET(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
 
   if (!accessToken) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const decoded = verify(accessToken, process.env.JWT_ACCESS_SECRET!) as DecodedToken;
+    const decoded = verify(
+      accessToken,
+      process.env.JWT_ACCESS_SECRET!,
+    ) as DecodedToken;
     const userId = decoded.userId;
 
     const { rows } = await db.query(
@@ -25,7 +29,7 @@ export async function GET(req: NextRequest) {
         l.name AS location_name,
         c.id AS camera_id,
         c.name AS camera_name,
-        'active' AS status -- Placeholder, as there's no status in schema
+        c.status AS status
       FROM factories f
       JOIN locations l ON f.id = l.factory_id
       JOIN cameras c ON l.id = c.location_id
@@ -36,7 +40,7 @@ export async function GET(req: NextRequest) {
 
     // Group data into a nested structure
     const groupedData: any = {};
-    rows.forEach(row => {
+    rows.forEach((row) => {
       if (!groupedData[row.factory_id]) {
         groupedData[row.factory_id] = {
           id: row.factory_id,
@@ -58,9 +62,12 @@ export async function GET(req: NextRequest) {
       });
     });
 
-    return NextResponse.json(Object.values(groupedData));
+    return NextResponse.json(Object.values(groupedData), { status: 200 });
   } catch (error) {
-    console.error('Error fetching camera feeds:', error);
-    return NextResponse.json({ message: 'Error fetching camera feeds' }, { status: 500 });
+    console.error("Error fetching camera feeds:", error);
+    return NextResponse.json(
+      { message: "Error fetching camera feeds" },
+      { status: 500 },
+    );
   }
 }

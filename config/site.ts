@@ -9,7 +9,7 @@ export const siteConfig = {
       href: "/feed",
     },
     {
-      label: "Alerts",
+      label: "Violations",
       href: "/alerts",
     },
     {
