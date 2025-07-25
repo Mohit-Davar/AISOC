@@ -1,9 +1,3 @@
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
 # === Model and Camera ===
 MODEL_PATH = r"./models/best.pt"
 WIDTH, HEIGHT = 640, 480

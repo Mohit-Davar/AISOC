@@ -1,11 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-
+import io from "socket.io-client";
 import { CheckCircle, XCircle } from "lucide-react";
-
 import {
-  BreadcrumbItem, Breadcrumbs, Card, CardBody, CardFooter, Chip, Divider, Input,
-  Spinner,
+  BreadcrumbItem, Breadcrumbs, Card, CardBody, CardFooter, Chip, Divider, Input, Spinner
 } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -57,9 +55,10 @@ const fetchCameras = async (): Promise<Camera[]> => {
   return Cameras;
 };
 
-export default function VisionAIDashboard() {
+export default function Feed() {
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [search, setSearch] = useState("");
+  const [videoFrame, setVideoFrame] = useState<string | null>(null);
 
   const { data, isLoading, isError, error } = useQuery<Camera[], Error>({
     queryKey: ["cameraFeeds"],
@@ -67,13 +66,28 @@ export default function VisionAIDashboard() {
   });
 
   useEffect(() => {
-    if (data && data.length > 0) {
+    if (data && data.length > 0 && !selectedCamera) {
       setSelectedCamera(data[0]);
     }
-  }, [data]);
+  }, [data, selectedCamera]);
+
+  useEffect(() => {
+    const socket = io();
+
+    socket.on("frameProcessed", (data) => {
+      if (selectedCamera && data.cameraId === selectedCamera.id) {
+        setVideoFrame(data.annotated_frame);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [selectedCamera]);
 
   const handleCameraSelect = (camera: Camera) => {
     setSelectedCamera(camera);
+    setVideoFrame(null);
   };
 
   const filteredCameras = !search
@@ -85,11 +99,7 @@ export default function VisionAIDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center"
-        style={{
-          height: "calc(100vh - 65px)"
-        }}
-      >
+      <div className="flex justify-center items-center" style={{ height: "calc(100vh - 65px)" }}>
         <Spinner label="Loading camera feeds" color="primary" variant="wave" size="lg" />
       </div>
     );
@@ -97,11 +107,7 @@ export default function VisionAIDashboard() {
 
   if (isError) {
     return (
-      <div className="flex justify-center items-center text-red-500"
-        style={{
-          height: "calc(100vh - 65px)"
-        }}
-      >
+      <div className="flex justify-center items-center text-red-500" style={{ height: "calc(100vh - 65px)" }}>
         Error: {error?.message}
       </div>
     );
@@ -109,24 +115,14 @@ export default function VisionAIDashboard() {
 
   if (!selectedCamera) {
     return (
-      <div className="flex justify-center items-center"
-        style={{
-          height: "calc(100vh - 65px)"
-        }}
-      >
+      <div className="flex justify-center items-center" style={{ height: "calc(100vh - 65px)" }}>
         No camera feeds available.
       </div>
     );
   }
 
-
   return (
-    <div className="flex w-full overflow-hidden"
-      style={{
-        height: "calc(100vh - 65px)"
-      }}
-    >
-      {/* Sidebar */}
+    <div className="flex w-full overflow-hidden" style={{ height: "calc(100vh - 65px)" }}>
       <aside className="flex flex-col p-4 border-r w-72 h-full overflow-y-auto">
         <Input
           variant="bordered"
@@ -147,11 +143,7 @@ export default function VisionAIDashboard() {
               isHoverable
               radius="lg"
               shadow="sm"
-              className={`p-1 transition-all duration-200
-            ${selectedCamera?.id === cam.id
-                  ? "border-2 border-blue-500"
-                  : "border-2 border-transparent hover:border-gray-300"
-                }`}
+              className={`p-1 transition-all duration-200 ${selectedCamera?.id === cam.id ? "border-2 border-blue-500" : "border-2 border-transparent hover:border-gray-300"}`}
               onPress={() => handleCameraSelect(cam)}
             >
               <CardBody className="flex flex-row justify-between">
@@ -160,6 +152,7 @@ export default function VisionAIDashboard() {
                   <span className="flex flex-col text-gray-500 text-xs">
                     <span>{cam.locationName}</span>
                     <span>{cam.factoryName}</span>
+
                   </span>
                 </div>
                 <Chip
@@ -175,9 +168,7 @@ export default function VisionAIDashboard() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 p-6 h-full overflow-y-auto">
-        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <Breadcrumbs isDisabled>
             <BreadcrumbItem>{selectedCamera.factoryName}</BreadcrumbItem>
@@ -193,12 +184,15 @@ export default function VisionAIDashboard() {
           </Chip>
         </div>
 
-        {/* Placeholder for Camera Feed */}
         <Card className="w-full h-[600px]" radius="lg" shadow="sm">
           <CardBody className="flex justify-center items-center p-4 h-full">
-            <p className="text-gray-500 text-lg">
-              Live feed of {selectedCamera.name} will appear here
-            </p>
+            {videoFrame ? (
+              <img src={`data:image/jpeg;base64,${videoFrame}`} alt="Live camera feed" className="max-w-full max-h-full" />
+            ) : (
+              <p className="text-gray-500 text-lg">
+                Live feed of {selectedCamera.name} will appear here
+              </p>
+            )}
           </CardBody>
           <Divider />
           <CardFooter className="flex justify-around p-4">

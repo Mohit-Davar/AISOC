@@ -15,5 +15,5 @@ while True:
     _, buffer = cv2.imencode('.jpg', frame)
     b64_frame = base64.b64encode(buffer).decode("utf-8")
 
-    sio.emit("feed", {"id": "camera_1", "frame": b64_frame})
+    sio.emit("feed", {"id": 1, "frame": b64_frame})
     time.sleep(0.1)

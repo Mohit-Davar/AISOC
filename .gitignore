@@ -6,6 +6,8 @@
 .pnp.js
 detection/.venv
 detection/models/
+/detection/src/_pycache_/
+.env
 
 # testing
 /coverage
