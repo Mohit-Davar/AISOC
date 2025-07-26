@@ -1,9 +1,10 @@
-const { Server } = require("socket.io");
-const { frameQueue } = require("./queue.cjs");
+
+import { Server } from "socket.io";
+import { frameQueue } from "./queue.js";
 
 let ioInstance = null;
 
-function initSocket(server) {
+export function initSocket(server) {
     const io = new Server(server, {
         cors: {
             origin: "*",
@@ -11,6 +12,7 @@ function initSocket(server) {
         },
         maxHttpBufferSize: 1e7,
     });
+
     io.on("connection", (socket) => {
         socket.on("feed", async ({ frame, id }) => {
             try {
@@ -23,19 +25,19 @@ function initSocket(server) {
                 console.error("Failed to add frame to queue:", err);
             }
         });
+
         socket.on("disconnect", () => {
             console.log("Client disconnected");
         });
     });
+
     ioInstance = io;
     return io;
 }
 
-function getIO() {
+export function getIO() {
     if (!ioInstance) {
         throw new Error("Socket.io not initialized");
     }
     return ioInstance;
 }
-
-module.exports = { initSocket, getIO };

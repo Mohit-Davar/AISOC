@@ -65,7 +65,7 @@ export const AddFactoryForm: React.FC = () => {
                         />
                     </div>
                     <Button type="submit" color="primary" isLoading={isSubmitting || addFactoryMutation.isPending} radius="full" variant="solid">
-                        {isSubmitting || addFactoryMutation.isPending ? < Spinner size="sm" color="white"  variant="simple"/> : <Plus size={18} />} Add Factory
+                        {isSubmitting || addFactoryMutation.isPending ? <></> : <Plus size={18} />} Add Factory
                     </Button>
                 </form>
             </CardBody>

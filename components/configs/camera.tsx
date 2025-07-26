@@ -128,7 +128,7 @@ export const AddCameraForm: React.FC = () => {
                         {isErrorLocations && <p className="mt-1 text-red-500 text-sm">Error loading locations: {locationsError?.message}</p>}
                     </div>
                     <Button type="submit" color="primary" isLoading={isSubmitting || addCameraMutation.isPending} radius="full">
-                        {isSubmitting || addCameraMutation.isPending ? <Spinner size="sm" color="white" variant="simple" /> : <Plus size={18} />} Add Camera
+                        {isSubmitting || addCameraMutation.isPending ? <></> : <Plus size={18} />} Add Camera
                     </Button>
                 </form>
             </CardBody>

@@ -114,7 +114,7 @@ export const AddLocationForm: React.FC = () => {
                         {isErrorFactories && <p className="mt-1 text-red-500 text-sm">Error loading factories: {factoriesError?.message}</p>}
                     </div>
                     <Button type="submit" color="primary" isLoading={isSubmitting || addLocationMutation.isPending} radius="full" variant="solid">
-                        {isSubmitting || addLocationMutation.isPending ? < Spinner size="sm" color="white" variant="simple" /> : <Plus size={18} />} Add Location
+                        {isSubmitting || addLocationMutation.isPending ? <></> : <Plus size={18} />} Add Location
                     </Button>
                 </form>
             </CardBody>

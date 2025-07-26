@@ -6,7 +6,7 @@ from email.mime.text import MIMEText
 
 # Violation settings
 CONFIDENCE_THRESHOLD = 0.6
-VIOLATION_LABELS = ["no_helmet", "no_vest", "no_mask", "no_gloves", "no_goggles"]
+VIOLATION_LABELS = ["no hardhat", "no safety vest", "no mask", "no gloves", "no goggles"]
 ALERT_SOUND_PATH = r"D:\BinaryBrains\alarm2.mp3"
 
 # WhatsApp

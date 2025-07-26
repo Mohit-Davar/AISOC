@@ -3,7 +3,7 @@ from flask_cors import CORS
 import base64
 import cv2
 import numpy as np
-from src import processing
+from src.processing import process_frame
 
 app = Flask(__name__)
 CORS(app)
@@ -20,8 +20,9 @@ def process():
         if frame is None:
             return jsonify({"error": "Invalid image data"}), 400
 
-        annotated, is_violation, info = processing.process_frame(frame)
-        _, buffer = cv2.imencode(".jpg", annotated)
+        annotated, is_violation, info = process_frame(frame)
+        resized_frame = cv2.resize(annotated, (720, 480))
+        _, buffer = cv2.imencode(".jpg", resized_frame)
         encoded = base64.b64encode(buffer).decode("utf-8")
 
         return jsonify({

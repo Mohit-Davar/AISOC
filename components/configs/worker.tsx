@@ -137,7 +137,7 @@ export const AddWorkerForm: React.FC = () => {
                         {isErrorFactories && <p className="mt-1 text-red-500 text-sm">Error loading factories: {factoriesError?.message}</p>}
                     </div>
                     <Button type="submit" color="primary" isLoading={isSubmitting || addWorkerMutation.isPending} radius="full">
-                        {isSubmitting || addWorkerMutation.isPending ? <Spinner size="sm" color="white" variant="simple" /> : <Plus size={18} />} Add Worker
+                        {isSubmitting || addWorkerMutation.isPending ? <></> : <Plus size={18} />} Add Worker
                     </Button>
                 </form>
             </CardBody>

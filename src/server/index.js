@@ -1,20 +1,13 @@
-const { createServer } = require("http");
-const next = require("next");
-const Redis = require("ioredis");
-const { initSocket, getIO } = require("../lib/socket.cjs");
+
+import { createServer } from "http";
+import next from "next";
+import { initSocket, getIO } from "../lib/socket.js";
+import { subscriber } from "../lib/redis.js";
 
 const PORT = process.env.PORT || 3000;
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
-
-const subscriber = new Redis({
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    username: process.env.REDIS_USER,
-    password: process.env.REDIS_PW,
-    maxRetriesPerRequest: null,
-});
 
 subscriber.subscribe("socket-events", (err, count) => {
     if (err) {

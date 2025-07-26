@@ -50,8 +50,8 @@ def process_frame(frame):
             if is_violation:
                 if should_log(label):
                     violation_detected = True
-                    violation_info.append(label)
                     last_logged[label] = datetime.now()
+                violation_info.append(label)
 
     draw_overlay(frame, total_people)
     return frame, violation_detected, violation_info

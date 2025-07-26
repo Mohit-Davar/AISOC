@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon server/index.cjs",
+    "dev": "nodemon src/server/index.js",
     "build": "next build",
-    "start": "node server/index.cjs",
-    "worker": "node worker/index.cjs",
+    "start": "node src/server/index.js",
+    "worker": "node src/worker/index.js",
     "lint": "eslint --fix"
   },
   "dependencies": {
@@ -25,6 +25,7 @@
     "clsx": "2.1.1",
     "cookie": "^1.0.2",
     "docx": "^9.5.1",
+    "dotenv": "^17.2.1",
     "file-saver": "^2.0.5",
     "intl-messageformat": "10.7.16",
     "ioredis": "^5.6.1",

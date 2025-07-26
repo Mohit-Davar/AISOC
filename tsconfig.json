@@ -28,9 +28,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "worker/index.cjs",
-    "lib/redis.cjs",
-    "lib/queue.cjs"
+    
   ],
   "exclude": ["node_modules"]
 }

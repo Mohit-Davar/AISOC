@@ -23,10 +23,11 @@ interface Location {
   cameras: Camera[];
 }
 
-interface Factory {
-  id: number;
-  name: string;
-  locations: { [key: number]: Location };
+interface FrameData {
+  annotatedFrame: string;
+  cameraId: number;
+  labels: string[];
+  violation: boolean;
 }
 
 const fetchCameras = async (): Promise<Camera[]> => {
@@ -58,7 +59,7 @@ const fetchCameras = async (): Promise<Camera[]> => {
 export default function Feed() {
   const [selectedCamera, setSelectedCamera] = useState<Camera | null>(null);
   const [search, setSearch] = useState("");
-  const [videoFrame, setVideoFrame] = useState<string | null>(null);
+  const [frameData, setFrameData] = useState<FrameData | null>(null);
 
   const { data, isLoading, isError, error } = useQuery<Camera[], Error>({
     queryKey: ["cameraFeeds"],
@@ -74,9 +75,9 @@ export default function Feed() {
   useEffect(() => {
     const socket = io();
 
-    socket.on("frameProcessed", (data) => {
+    socket.on("frameProcessed", (data: FrameData) => {
       if (selectedCamera && data.cameraId === selectedCamera.id) {
-        setVideoFrame(data.annotated_frame);
+        setFrameData(data);
       }
     });
 
@@ -87,7 +88,7 @@ export default function Feed() {
 
   const handleCameraSelect = (camera: Camera) => {
     setSelectedCamera(camera);
-    setVideoFrame(null);
+    setFrameData(null);
   };
 
   const filteredCameras = !search
@@ -96,6 +97,36 @@ export default function Feed() {
       [cam.name, cam.locationName, cam.factoryName]
         .some(field => field.toLowerCase().includes(search.toLowerCase()))
     ) || [];
+
+  // Function to get safety equipment status
+  const getSafetyEquipmentStatus = () => {
+    if (!frameData?.labels) {
+      return {
+        vest: { present: false, label: "Unknown" },
+        helmet: { present: false, label: "Unknown" },
+        mask: { present: false, label: "Unknown" }
+      };
+    }
+
+    const labels = frameData.labels;
+
+    return {
+      vest: {
+        present: !labels.includes('no safety vest'),
+        label: labels.includes('no safety vest') ? 'No Vest' : 'Vest'
+      },
+      helmet: {
+        present: !labels.includes('no hardhat'),
+        label: labels.includes('no hardhat') ? 'No Hardhat' : 'Hardhat'
+      },
+      mask: {
+        present: !labels.includes('no mask'),
+        label: labels.includes('no mask') ? 'No Mask' : 'Mask'
+      }
+    };
+  };
+
+  const safetyStatus = getSafetyEquipmentStatus();
 
   if (isLoading) {
     return (
@@ -152,7 +183,6 @@ export default function Feed() {
                   <span className="flex flex-col text-gray-500 text-xs">
                     <span>{cam.locationName}</span>
                     <span>{cam.factoryName}</span>
-
                   </span>
                 </div>
                 <Chip
@@ -175,38 +205,61 @@ export default function Feed() {
             <BreadcrumbItem>{selectedCamera.locationName}</BreadcrumbItem>
             <BreadcrumbItem>{selectedCamera.name}</BreadcrumbItem>
           </Breadcrumbs>
-          <Chip
-            color={selectedCamera.status === "active" ? "success" : "default"}
-            variant="dot"
-          >
-            {selectedCamera.status.charAt(0).toUpperCase() +
-              selectedCamera.status.slice(1)}
-          </Chip>
+          <div className="flex items-center gap-2">
+            <Chip
+              color={selectedCamera.status === "active" ? "success" : "default"}
+              variant="dot"
+            >
+              {selectedCamera.status.charAt(0).toUpperCase() +
+                selectedCamera.status.slice(1)}
+            </Chip>
+            {frameData?.violation && (
+              <Chip color="danger" variant="flat">
+                Safety Violation
+              </Chip>
+            )}
+          </div>
         </div>
 
         <Card className="w-full h-[600px]" radius="lg" shadow="sm">
           <CardBody className="flex justify-center items-center p-4 h-full">
-            {videoFrame ? (
-              <img src={`data:image/jpeg;base64,${videoFrame}`} alt="Live camera feed" className="max-w-full max-h-full" />
+            {frameData?.annotatedFrame ? (
+              <img
+                src={`data:image/jpeg;base64,${frameData.annotatedFrame}`}
+                alt={`Live feed from ${selectedCamera.name}`}
+                className="rounded-lg max-w-full max-h-full object-contain"
+              />
             ) : (
-              <p className="text-gray-500 text-lg">
-                Live feed of {selectedCamera.name} will appear here
-              </p>
+              <div className="text-center">
+                <Spinner size="lg" className="mb-4" />
+                <p className="text-gray-500 text-lg">
+                  Waiting for live feed from {selectedCamera.name}...
+                </p>
+              </div>
             )}
           </CardBody>
           <Divider />
           <CardFooter className="flex justify-around p-4">
-            <Chip startContent={<CheckCircle size={18} />} variant="light" color="success">
-              Vest
+            <Chip
+              startContent={safetyStatus.vest.present ? <CheckCircle size={18} /> : <XCircle size={18} />}
+              variant="light"
+              color={safetyStatus.vest.present ? "success" : "danger"}
+            >
+              {safetyStatus.vest.label}
             </Chip>
-            <Chip startContent={<XCircle size={18} />} variant="light" color="danger">
-              Helmet
+            <Chip
+              startContent={safetyStatus.helmet.present ? <CheckCircle size={18} /> : <XCircle size={18} />}
+              variant="light"
+              color={safetyStatus.helmet.present ? "success" : "danger"}
+            >
+              {safetyStatus.helmet.label}
             </Chip>
-            <Chip startContent={<CheckCircle size={18} />} variant="light" color="success">
-              Gloves
-            </Chip>
-            <Chip startContent={<XCircle size={18} />} variant="light" color="danger">
-              Mask
+            <Chip
+              startContent={safetyStatus.mask.present ? <CheckCircle size={18} /> : <XCircle size={18} />}
+              variant="light"
+              color={safetyStatus.mask.present ? "success" : "danger"}
+            >
+              {safetyStatus.mask.label}
             </Chip>
           </CardFooter>
         </Card>
